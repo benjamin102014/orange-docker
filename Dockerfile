@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM python:3.10-slim
 
 WORKDIR /app
 
@@ -12,15 +12,23 @@ RUN apt-get update && apt-get install -y \
     libxcb-image0 \
     libxcb-keysyms1 \
     libxcb-render-util0 \
+    libxcb-cursor0 \
+    libxkbcommon-x11-0 \
+    libx11-xcb1 \
+    libegl1-mesa \ 
+    procps \
+    git \
+    gcc \
+    build-essential \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# install Orange
-RUN conda create python=3.10 --yes --name orange3
-RUN conda init bash
-RUN bash -c "source activate base && conda activate orange3"
-ENV PATH=/opt/conda/envs/orange3/bin:$PATH
-RUN conda install orange3 --yes
-#RUN /opt/conda/envs/orange3/bin/pip install psycopg2-binary
+# Upgrade pip and setuptools
+RUN pip install --upgrade pip setuptools
+
+# Clone and install Orange3 and its dependencies
+RUN git clone https://github.com/biolab/orange3.git && \
+    pip install PyQt6 PyQt6-WebEngine && \
+    pip install -e orange3
 
 ENV DISPLAY=:0
 EXPOSE 6080
